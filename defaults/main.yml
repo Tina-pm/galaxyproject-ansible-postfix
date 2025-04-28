@@ -154,7 +154,9 @@ __postfix_config_default:
     myorigin: /etc/mailname
     readme_directory: "no"
     smtpd_relay_restrictions:
-      permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+      - permit_mynetworks
+      - permit_sasl_authenticated
+      - defer_unauth_destination
     strict_rfc821_envelopes: ~
 
   redhat:
