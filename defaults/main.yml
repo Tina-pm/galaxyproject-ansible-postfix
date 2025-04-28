@@ -18,11 +18,8 @@ __postfix_chroot_default: "{{ true if __postfix_debian else false }}"
 
 __postfix_debian_packages:
   - postfix
-  - bsd-mailx
-  #- procmail
 __postfix_redhat_packages:
   - postfix
-  - s-nail
 __postfix_smartos_packages:
   - postfix
 
