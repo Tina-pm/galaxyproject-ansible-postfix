@@ -121,6 +121,19 @@ postfix_config_dir: >-
     '/opt/local/etc/postfix' if __postfix_smartos else '/etc/postfix'
   }}
 
+# Sort configuration entries alphabetically, if disabled ordering is determined
+# by Python's dictionary ordering, or by the optional ordering lists below.
+postfix_sort_configs: true
+# postfix_config_order:
+#   - optname1
+#   - optname2
+# postfix_master_config_order:
+#   - svcname1
+#   - svcname2
+# postfix_amavisd_new_config_order:
+#   - optname1
+#   - optname2
+
 __postfix_config_default:
   common:
     append_dot_mydomain: "no"
@@ -196,6 +209,15 @@ __postfix_config_merged: >-
     | combine(__postfix_config_default[postfix_role] | default({}))
     | combine({'content_filter': 'smtp-amavis:localhost:10024'} if postfix_clamav or postfix_spamassassin else {})
     | combine(postfix_config | default({}))
+  }}
+__postfix_config_sorted: >-
+  {{
+    __postfix_config_merged | sort
+    if postfix_sort_configs | bool else
+    (
+      postfix_config_order | default([]) +
+      __postfix_config_merged | list
+    ) | unique
   }}
 
 __postfix_master_config_default:
@@ -381,6 +403,15 @@ __postfix_master_config_merged: >-
     | combine(__postfix_amavisd_new_master_config if postfix_spamassassin or postfix_clamav else {})
     | combine(postfix_master_config | default({}), recursive=True)
   }}
+__postfix_master_config_sorted: >-
+  {{
+    __postfix_master_config_merged | sort
+    if postfix_sort_configs | bool else
+    (
+      postfix_master_config_order | default([]) +
+      __postfix_master_config_merged | list
+    ) | unique
+  }}
 
 __postfix_amavisd_new_service_names: >-
   {{
@@ -406,6 +437,16 @@ __postfix_amavisd_new_exclusive_config_file: >-
     '/etc/amavis/conf.d/99-ansible' if __postfix_debian else '/etc/amavisd/ansible.conf'
   }}
 __postfix_amavisd_new_config_merged: "{{ postfix_amavisd_new_config | default({}) }}"
+__postfix_amavisd_new_config_sorted: >-
+  {{
+    __postfix_amavisd_new_config_merged | sort
+    if postfix_sort_configs | bool else
+    (
+      postfix_amavisd_new_config_order | default([]) +
+      __postfix_amavisd_new_config_merged | list
+    ) | unique
+  }}
+
 
 
 # Debian writes out a full config with a bunch of defaults that may differ from the compile-time defaults, you can

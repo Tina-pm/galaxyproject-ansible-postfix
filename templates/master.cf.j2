@@ -2,8 +2,10 @@
 # service type  private unpriv  chroot  wakeup  maxproc command + args
 #               (yes)   (yes)   (no)    (never) (100)
 # ==========================================================================
-{% for key in __postfix_master_config_merged | sort if __postfix_master_config_merged[key].state | default('present') != 'absent' %}
+{% for key in __postfix_master_config_sorted
+  if key in __postfix_master_config_merged %}
 {% set service = __postfix_master_config_merged[key] %}
+{% if service and (service.state | default('present')) != 'absent' %}
 {{
     "%-9s" | format(key.rsplit('-', 1)[0])
 }} {{
@@ -23,5 +25,6 @@
 }}
 {% if 'args' in service %}
     {{ service.args | indent(4) }}
+{% endif %}
 {% endif %}
 {% endfor %}
