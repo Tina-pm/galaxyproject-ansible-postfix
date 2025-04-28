@@ -135,9 +135,15 @@ __postfix_config_default:
   debian:
     alias_maps: hash:/etc/aliases
     alias_database: hash:/etc/aliases
-    compatibility_level: 2
+    compatibility_level: 3.6
+    inet_interfaces: all
+    mailbox_size_limit: 0
     myorigin: /etc/mailname
     readme_directory: "no"
+    smtpd_relay_restrictions:
+      permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+    strict_rfc821_envelopes: ~
+
   redhat:
     alias_maps: hash:/etc/aliases
     alias_database: hash:/etc/aliases
@@ -291,6 +297,53 @@ __postfix_master_config_default:
       chroot: "{{ __postfix_chroot_default }}"
       maxproc: 1
       command: scache
+    postlog-unix_dgram:
+      private: no
+      chroot: no
+      maxproc: 1
+      command: postlogd
+    maildrop-unix:
+      unpriv: no
+      chroot: no
+      command: pipe
+      args: |
+        flags=DRXhu user=vmail argv=/usr/bin/maildrop -d ${recipient}
+    uucp-unix:
+      unpriv: no
+      chroot: no
+      command: pipe
+      args: >
+        flags=Fqhu user=uucp
+        argv=uux -r -n -z -a$sender - $nexthop!rmail ($recipient)
+    ifmail-unix:
+      unpriv: no
+      chroot: no
+      command: pipe
+      args: |
+        flags=F user=ftn argv=/usr/lib/ifmail/ifmail -r $nexthop ($recipient)
+    bsmtp-unix:
+      unpriv: no
+      chroot: no
+      command: pipe
+      args: >
+        flags=Fq. user=bsmtp
+        argv=/usr/lib/bsmtp/bsmtp -t$nexthop -f$sender $recipient
+    scalemail-backend-unix:
+      unpriv: no
+      chroot: no
+      maxproc: 2
+      command: pipe
+      args: >
+        flags=R user=scalemail
+        argv=/usr/lib/scalemail/bin/scalemail-store ${nexthop} ${user}
+        ${extension}
+    mailman-unix:
+      unpriv: no
+      chroot: no
+      command: pipe
+      args: >
+        flags=FRX user=list
+        argv=/usr/lib/mailman/bin/postfix-to-mailman.py ${nexthop} ${user}
 __postfix_amavisd_new_master_config:
   smtp-amavis-unix:
     maxproc: 2

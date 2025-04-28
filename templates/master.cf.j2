@@ -7,7 +7,7 @@
 {{
     "%-9s" | format(key.rsplit('-', 1)[0])
 }} {{
-    "%-5s" | format(key.rsplit('-', 1)[1])
+    "%-5s" | format(key.rsplit('-', 1)[1].replace('_', '-'))
 }} {{
     "%-7s" | format('-' if service.private is not defined else ('n' if (service.private == 'n' or not service.private | bool) else 'y'))
 }} {{
