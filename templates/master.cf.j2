@@ -22,6 +22,6 @@
     service.command
 }}
 {% if 'args' in service %}
-    {{ service.args }}
+    {{ service.args | indent(4) }}
 {% endif %}
 {% endfor %}
